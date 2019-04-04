@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>380</width>
-    <height>204</height>
+    <height>268</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Регулярные выражения</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -40,6 +40,13 @@
      </layout>
     </item>
     <item>
+     <widget class="QPushButton" name="genButton">
+      <property name="text">
+       <string>Сгенерировать автомат по регулярному выражению</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="checkButton">
       <property name="text">
        <string>Проверить</string>
@@ -52,6 +59,9 @@
        <string/>
       </property>
      </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="comboBox"/>
     </item>
     <item>
      <widget class="QTableWidget" name="tableWidgetDNA"/>
