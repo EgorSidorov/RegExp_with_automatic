@@ -1,14 +1,19 @@
 #ifndef DFA_H
 #define DFA_H
 
-#include <nfa.h>
+#include <nfauto.h>
 
-
-class DFA : public NFA
-{
+class DFAuto : public NFAuto{
 public:
-    explicit DFA();
-private:
+    explicit DFAuto();
+    ~DFAuto();
+    struct dfa_struct{
+        bool visited;
+        bool isEnded;
+        bool isStarted;
+        bool calculated;
+    };
+    void MyMethod();
 
 };
 

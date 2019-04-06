@@ -25,23 +25,11 @@ private slots:
     void on_genButton_clicked();
 
 private:
-    bool check_valid_string(const QString &string, QString &description);
-    void make_alphabet(QString &string);
-    QMap<QString, QString> choose_bracket(QString &string);
-
-private:
     Ui::MainWindow *ui;
-    QList<QChar> dictionary;
-    QList<QChar> alphabet;
-    QMap<QString, QList<RegExp::node*> > special_list;
-    RegExp* nfa;
-    std::unique_ptr<DFA> dfa;
-    //void create_nfa(const QString &string);
+    std::unique_ptr<RegExp> regExp;
     int comboBoxIndex;
-    void makeNFAfromRegExp();
-    void create_nfa(QString &string, QMap<QString, QList<RegExp::node *> > list_brackets_nodes);
-    void add_sign(QString &string);
-    void change_plus_by_kleene_and_contagenation(QString &string);
+    void print();
+    void print(QTableWidget *widget);
 };
 
 #endif // MAINWINDOW_H

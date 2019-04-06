@@ -1,300 +1,209 @@
 #include "regexp.h"
 #include <QDebug>
 #include <QTableWidgetItem>
+#include <bracketstosymbol.h>
 
-RegExp::RegExp(QList<QChar> dictionary)
+RegExp::RegExp(const QString &str)
 {
-    this->dictionary = dictionary;
-    init();
-}
-
-RegExp::RegExp()
-{
-}
-
-void RegExp::init()
-{
-    input_node = new node;
-    nodes.append(input_node);
-    input_node->set_is_starting(true);
-    current_nodes.append(input_node);
-}
-
-void RegExp::concagenation()
-{
-    QString symbols = input_symbols.pop();
-    if(symbols.length() == 1){
-        QChar symbol = symbols[0];
-        node* new_node = new node;
-        nodes.append(new_node);
-        for(node* _node : current_nodes){
-            _node->add_output_node(new_node,symbol);
+    expression = str;
+    dictionary << '*' << '|' << '+'<<'('<<')'<<'&';
+    if(check_valid_string()){
+        make_alphabet();
+        delete_empty_brackets();
+        change_plus_by_kleene_and_contagenation();
+        BracketsToSymbol list_brackets_symbols(expression);
+        for(auto& it_str : list_brackets_symbols.get_bracket_list_priority()){
+            create_nfa(it_str.second,list_brackets_symbols.get_bracket_node_map(), false);
+            list_brackets_symbols.insert_bracket_node_map(it_str.first,nfa->getNodes());
         }
-        current_nodes.clear();
-        current_nodes.append(new_node);
-    } else {
-        stack_begin->set_is_starting(false);
-        for(node* _node : current_nodes){
-            for(node* _node2 : stack_begin->get_output_nodes()){
-                //if(_node2 != stack_begin){
-                    for(QChar symbol2 : get_connection_symbols(stack_begin,_node2))
-                        _node->add_output_node(_node2,symbol2);
-                    stack_begin->remove_output_node(_node2);
-                //}
-            }
-            for(node* _node2 : stack_begin->get_input_nodes()){
-                //if(_node2 != stack_begin){
-                    for(QChar symbol2 : get_connection_symbols(_node2,stack_begin))
-                        _node->add_input_node(_node2,symbol2);
-                    stack_begin->remove_input_node(_node2);
-                //}
-            }
-        }
-        if(!stack_end.contains(stack_begin))
-            current_nodes.clear();
-        stack_automat.removeAll(stack_begin);
-        nodes.append(stack_automat);
-        current_nodes.append(stack_end);
-        for(node* _node : stack_end){
-            _node->set_is_Ended(false);
-        }
-        stack_automat.clear();
-        delete stack_begin;
-        stack_begin = NULL;
-        stack_end.clear();
+        create_nfa(expression,list_brackets_symbols.get_bracket_node_map(), true);
     }
 }
 
-void RegExp::setEnd(){
-    for(node* _node : current_nodes){
-        _node->set_is_Ended(true);
+void RegExp::make_alphabet()
+{
+    alphabet.clear();
+    for(QChar symbol:expression){
+        if(alphabet.indexOf(symbol) == -1 && dictionary.indexOf(symbol) == -1)
+            alphabet.append(symbol);
     }
 }
 
-void RegExp::association()
+void RegExp::create_nfa(QString &string, QMap<QString, QList<node*> > list_brackets_nodes, bool isEnded)
 {
-    output_node.append(current_nodes);
-    for(node* _node : current_nodes)
-        _node->set_is_Ended(true);
-    current_nodes.clear();
-    current_nodes.append(input_node);
-}
-
-
-void RegExp::plus()
-{
-    QString symbols = input_symbols.pop();
-    if(symbols.length() == 1){
-        QChar symbol = symbols[0];
-        node* new_node = new node;
-        nodes.append(new_node);
-        for(node* _node : current_nodes){
-            _node->add_output_node(new_node,symbol);
-        }
-        new_node->add_output_node(new_node,symbol);
-        current_nodes.clear();
-        current_nodes.append(new_node);
-    }
-}
-
-void RegExp::kleene()
-{
-    QString symbols = input_symbols.pop();
-    if(symbols.length() == 1){
-        QChar symbol = symbols[0];
-        node* new_node = new node;
-        nodes.append(new_node);
-        for(node* _node : current_nodes){
-            _node->add_output_node(new_node,symbol);
-        }
-        new_node->add_output_node(new_node,symbol);
-        current_nodes.append(new_node);
-    } else {
-        //добавить в список нод все, кроме начальных и конечных элементов(т.к. они будут удалены)
-        if(!stack_end.contains(stack_begin))
-            stack_automat.removeAll(stack_begin);
-        for(node* _node : stack_end){
-            stack_automat.removeAll(_node);
-        }
-        nodes.append(stack_automat);
-
-        //убрать все конечные элементы и все пути с них перенаправить на начало
-        for(node* _node2 : stack_end){
-            if(_node2 != stack_begin){
-                for(node* node3 : _node2->get_output_nodes()){
-                    for(QChar symbol3 : get_connection_symbols(_node2,node3)){
-                        for(node* _node4 : current_nodes){
-                            node3->add_input_node(_node4,symbol3);
-                        }
-                        //stack_begin->add_input_node(node3,symbol3);
-                        //if(!current_nodes.contains(node3))
-                        //    current_nodes.append(node3);
-                    }
-                    _node2->remove_output_node(node3);
-                }
-                for(node* node3 : _node2->get_input_nodes()){
-                    for(QChar symbol3 : get_connection_symbols(node3,_node2)){
-                        for(node* _node4 : current_nodes){
-                            node3->add_output_node(_node4,symbol3);
-                        }
-                        //stack_begin->add_output_node(node3,symbol3);
-                        //if(!current_nodes.contains(node3))
-                        //    current_nodes.append(node3);
-                    }
-                    _node2->remove_input_node(node3);
-                }
-                delete _node2;
-            }
-        }
-
-        //убрать начало и все пути с него перенаправить на конечные элементы
-        for(node* _node : current_nodes){
-            for(node* _node2 : stack_begin->get_output_nodes()){
-                for(QChar symbol2 : get_connection_symbols(stack_begin,_node2))
-                    _node->add_output_node(_node2,symbol2);
-                stack_begin->remove_output_node(_node2);
-            }
-            for(node* _node2 : stack_begin->get_input_nodes()){
-                for(QChar symbol2 : get_connection_symbols(_node2,stack_begin))
-                    _node->add_input_node(_node2,symbol2);
-                stack_begin->remove_input_node(_node2);
-            }
-        }
-
-        stack_automat.clear();
-        delete stack_begin;
-        stack_begin = NULL;
-        stack_end.clear();
-    }
-}
-
-void RegExp::revert()
-{
-
-}
-
-QList<QChar> RegExp::get_connection_symbols(node* input_node, node* output_node){
-    QList<QChar> return_list;
-    for(QChar symbol : dictionary){
-        if(input_node->get_output_nodes(symbol).indexOf(output_node) != -1)
-            return_list.append(symbol);
-    }
-    return return_list;
-}
-
-void RegExp::print()
-{
-    int number = 1;
-    for(node* iter1:nodes)
+    add_sign(string);
+    nfa = std::make_unique<NFAuto>(alphabet,isEnded);
+    int pos = 0;
+    while(string.length() > pos)
     {
-        QString str_node = "node";
-        if(iter1->isStarting)
-            str_node.prepend("Begin ");
-        if(iter1->isEnded)
-            str_node.prepend("End ");
-        qDebug()<<str_node+QString::number(number);
-        QList<QChar> list_iter2;
-        foreach(QChar iter2 , iter1->outgoing_map.keys())
-        {
-            if(list_iter2.indexOf(iter2) != -1)
-                continue;
-            list_iter2<<iter2;
-            int number_iter = 1;
-            for(node* iter_node: nodes){
-                if(iter1->outgoing_map.find(iter2,iter_node) != iter1->outgoing_map.end()){
-                   qDebug()<<QString::number(number_iter)<<" "<<iter2;
-                }
-                number_iter++;
+        QChar symbol = string[pos];
+        if(string.length()>=(pos+3) && (symbol == '/')){
+            int number_pos = string.indexOf('/',pos+2) + 1;
+            QString str = string.mid(pos,number_pos-pos);
+            nfa->addInput_symbols(str);
+            nfa->setStack_automat(list_brackets_nodes.find(str).value());
+            for(node* _node : list_brackets_nodes.find(str).value()){
+                if(_node->get_is_starting())
+                   nfa->setStack_begin(_node);
+                if(_node->get_is_Ended())
+                    nfa->addStack_end(_node);
+            }
+            pos=number_pos-1;
+        }
+        else if(symbol == '|'){
+            nfa->association();
+        } else if(symbol == '*'){
+            nfa->kleene();
+        } else if(symbol == '+'){
+            nfa->plus();
+        } else if(symbol == '&'){
+            nfa->concagenation();
+        }else{
+            nfa->addInput_symbols(symbol);
+        }
+        pos++;
+    }
+    nfa->setEnd();
+}
 
+void RegExp::add_sign(QString& string){
+    if(string[0] != '/')
+        string.insert(1,'&');
+    else{
+        int number_pos = string.indexOf('/',2) + 1;
+        string.insert(number_pos,'&');
+    }
+    int pos = 2;
+    while(pos < string.length()){
+        QChar symbol = string[pos];
+        if(symbol == '/'){
+            int number_pos = string.indexOf('/',pos+2) + 1;
+            string.insert(number_pos,'&');
+            pos=number_pos-1;
+        }
+        else if(dictionary.indexOf(symbol) == -1){
+                string.insert(pos+1,'&');
+                pos++;
+        } else if(symbol == '*' || symbol == '+'){
+            string.remove(pos-1,1);
+            pos--;
+        }
+        pos++;
+    }
+    if(dictionary.indexOf(string[string.length()-1]) == -1)
+        string.append('&');
+
+}
+
+void RegExp::change_plus_by_kleene_and_contagenation(){
+    int current_index = 0;
+    int plus_index = expression.indexOf(")+",current_index);
+    int begin_index = 0;
+
+    while(plus_index != -1){
+        int number = 1;
+        while(number != 0){
+            for(int j = plus_index-1; j>=0; j--){
+                if(expression[j] == '(')
+                    number--;
+                if(expression[j] == ')')
+                    number++;
+                if(number == 0)
+                {
+                    begin_index = j;
+                    break;
+                }
             }
         }
-        number++;
+        QString current_string = expression.mid(begin_index,plus_index-begin_index+1);
+        expression.remove(plus_index+1,1);
+        expression.insert(plus_index+1,"*"+current_string);
+        plus_index+= current_string.length()+1;
+        current_index = plus_index;
+        plus_index = expression.indexOf(")+",current_index);
     }
 }
 
-void RegExp::print(QTableWidget *widget)
+bool RegExp::check_valid_string()
 {
-    widget->clear();
-    int countRow = nodes.length();
-    int countColumn = dictionary.length();
-    widget->setColumnCount(countColumn);
-    widget->setRowCount(countRow);
-    for(int i = 0; i < countColumn; i++)
+    //проверка равенства числа левых и правых скобок
     {
-       widget->setHorizontalHeaderItem(i,new QTableWidgetItem(dictionary.at(i)));
-       for(int j = 0; j < countRow; j++)
-       {
-           QTableWidgetItem* tableItem = new QTableWidgetItem(QString(" "));
-           widget->setItem(i,j,tableItem);
-       }
+        int index = 0;
+        for(QChar symbol:expression){
+            if(symbol == '(')
+                index++;
+            else if(symbol == ')')
+                index--;
+            if(index < 0){
+                description = "Некорректное. Закрывающаяся скобка без открывающейся.";
+                isValid = false;
+                return false;
+            }
+        }
+        if(index != 0){
+            description = "Некорректное. Открывающаяся скобка без закрывающейся.";
+            isValid = false;
+            return false;
+        }
+    }
+    //проверка равенства числа левых и правых скобок
+
+    QStringList incorrect_symbols_list;
+    incorrect_symbols_list << "||" <<"++"<<"**"<<"*+"<<"+*"<<"|+"<<"|*";
+    int position = 0;
+    for(QString iter : incorrect_symbols_list){
+        if(expression.indexOf(iter) != -1)
+            break;
+        position++;
     }
 
-    for(int i = 0; i < countColumn; i++)
-    {
-       widget->setHorizontalHeaderItem(i,new QTableWidgetItem(dictionary.at(i)));
-       for(int j = 0; j < countRow; j++)
-       {
-           QTableWidgetItem* tableItem = new QTableWidgetItem(QString());
-           widget->setItem(j,i,tableItem);
-       }
+    if(position != incorrect_symbols_list.length()){
+        description = "Некорректное. Два знака "+incorrect_symbols_list[position]+" подряд.";
+        isValid = false;
+        return false;
     }
 
-    int number = 0;
-    for(node* iter1:nodes)
-    {
-        int color = 0;
-        if(iter1->isStarting && iter1->isEnded){
-            color = 3;
-            for(int j = 0; j < widget->columnCount(); j++)
-            {
-                widget->item(number,j)->setBackgroundColor("orange");
-            }
-        }
-        else if(iter1->isStarting){
-            color = 1;
-            for(int j = 0; j < widget->columnCount(); j++)
-            {
-                widget->item(number,j)->setBackgroundColor("yellow");
-            }
-        }
-        else if(iter1->isEnded){
-            color = 2;
-            for(int j = 0; j < widget->columnCount(); j++)
-            {
-                widget->item(number,j)->setBackgroundColor("red");
-            }
-        }
-        QList<QChar> list_iter2;
-        foreach(QChar iter2 , iter1->outgoing_map.keys())
-        {
-            if(list_iter2.indexOf(iter2) != -1)
-                continue;
-            list_iter2<<iter2;
-            int number_iter = 1;
-            for(node* iter_node: nodes){
-                if(iter1->outgoing_map.find(iter2,iter_node) != iter1->outgoing_map.end()){
-                    QTableWidgetItem * item = widget->item(number,dictionary.indexOf(iter2));
-                    if(item == nullptr)
-                        exit(1);
-                    QString last_text = item->text();
-                    QString current_text;
-                    if(!last_text.isEmpty())
-                        current_text = last_text+","+QString::number(number_iter);
-                    else
-                        current_text = QString::number(number_iter);
-                    QTableWidgetItem * new_item = new QTableWidgetItem(current_text);
-                    if(color == 1)
-                        new_item->setBackgroundColor(QColor("yellow"));
-                    else if(color == 2)
-                        new_item->setBackgroundColor(QColor("red"));
-                    else if(color == 3)
-                        new_item->setBackgroundColor(QColor("orange"));
-                    widget->setItem(number,dictionary.indexOf(iter2),new_item);
-                }
-                number_iter++;
-
-            }
-        }
-        number++;
+    if(expression.contains('/')){
+        description = "Некорректное. Запрещенный символ /";
+        isValid = false;
+        return false;
     }
+
+    description = "Корректное.";
+    isValid = true;
+    return true;
+}
+
+
+void RegExp::delete_empty_brackets(){
+    int current_index = expression.indexOf("()");
+    while(current_index!=-1){
+        expression.remove(current_index,2);
+        current_index = expression.indexOf("()");
+    }
+}
+
+QString RegExp::getDescription() const
+{
+    return description;
+}
+
+QList<node *> RegExp::getListNFANodes()
+{
+    return nfa->getNodes();
+}
+
+QList<node *> RegExp::getListDFANodes()
+{
+    return QList<node *>();
+}
+
+bool RegExp::getIsValid() const
+{
+    return isValid;
+}
+
+QList<QChar> RegExp::getAlphabet() const
+{
+    return alphabet;
 }

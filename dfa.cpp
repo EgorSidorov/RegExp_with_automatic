@@ -1,6 +1,13 @@
 #include "dfa.h"
 
-DFA::DFA() : NFA()
+DFAuto::DFAuto()
 {
 
 }
+
+DFAuto::~DFAuto()
+{
+
+}
+
+void DFAuto::MyMethod(){int b = 0; b++;}

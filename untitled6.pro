@@ -30,14 +30,16 @@ SOURCES += \
     bracketstosymbol.cpp \
     regexp.cpp \
     dfa.cpp \
-    nfa.cpp
+    nfauto.cpp \
+    node.cpp
 
 HEADERS += \
         mainwindow.h \
     bracketstosymbol.h \
     regexp.h \
     dfa.h \
-    nfa.h
+    nfauto.h \
+    node.h
 
 FORMS += \
         mainwindow.ui

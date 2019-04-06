@@ -15,11 +15,11 @@ void BracketsToSymbol::make_list_priority(){
 
 }
 
-void BracketsToSymbol::insert_bracket_node_map(QString& str, QList<RegExp::node *> & list_node){
+void BracketsToSymbol::insert_bracket_node_map(QString& str, QList<node *> list_node){
     node_map.insert(str,list_node);
 }
 
-QMap<QString, QList<RegExp::node *> > BracketsToSymbol::get_bracket_node_map()
+QMap<QString, QList<node *> > BracketsToSymbol::get_bracket_node_map()
 {
     return node_map;
 }
