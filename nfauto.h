@@ -27,9 +27,14 @@ public:
 
     QList<node *> getNodes();
 
-private:
+    void replaceInput();
+
+    QList<node *> getInput_nodes() const;
+
+protected:
     QList<QChar> alphabet;
     QList<node*> nodes;
+    QList<node*> input_nodes;
     node* input_node;
     QList<node*> output_node;
     bool start_is_ended;

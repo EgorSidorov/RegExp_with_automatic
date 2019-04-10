@@ -177,7 +177,11 @@ void NFAuto::kleene()
 
 void NFAuto::revert()
 {
-
+    for(auto _node : nodes)
+        _node->revert();
+    QList<node*> buffer = output_node;
+    output_node = input_nodes;
+    input_nodes = output_node;
 }
 
 QList<QChar> NFAuto::get_connection_symbols(node* input_node, node* output_node){
@@ -212,4 +216,14 @@ void NFAuto::addInput_symbols(QString value)
 QList<node *> NFAuto::getNodes()
 {
     return nodes;
+}
+
+void NFAuto::replaceInput()
+{
+    input_nodes.append(input_node);
+}
+
+QList<node *> NFAuto::getInput_nodes() const
+{
+    return input_nodes;
 }

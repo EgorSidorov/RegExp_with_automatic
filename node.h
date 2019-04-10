@@ -45,6 +45,8 @@ public:
 
     QMultiMap<QChar, node *> *getOutgoing_map();
 
+    void revert();
+
 private:
     QMultiMap<QChar,node*> input_map;
     QMultiMap<QChar,node*> outgoing_map;

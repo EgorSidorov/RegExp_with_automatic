@@ -17,6 +17,8 @@ RegExp::RegExp(const QString &str)
             list_brackets_symbols.insert_bracket_node_map(it_str.first,nfa->getNodes());
         }
         create_nfa(expression,list_brackets_symbols.get_bracket_node_map(), true);
+        nfa->replaceInput();
+        create_dfa();
     }
 }
 
@@ -27,6 +29,57 @@ void RegExp::make_alphabet()
         if(alphabet.indexOf(symbol) == -1 && dictionary.indexOf(symbol) == -1)
             alphabet.append(symbol);
     }
+}
+
+void RegExp::create_dfa(){
+    dfa = std::make_unique<DFAuto>(alphabet);
+    bool isEnd = false;
+    for(node* iter : nfa->getInput_nodes())
+    {
+        if(iter->get_is_Ended()){
+            isEnd = true;
+            break;
+        }
+    }
+    dfa->insert_node(nfa->getInput_nodes(),true,isEnd,' ',NULL);
+    QList<node*> checked_nodes;
+    checked_nodes.append(nfa->getInput_nodes());
+    QList<node*> current_nodes;
+    current_nodes.append(nfa->getInput_nodes());
+    while(checked_nodes.length() != nfa->getNodes().length()){
+        //dfa->new_state();
+        QList<node*> current_nodes_buffer = current_nodes;
+        current_nodes.clear();
+        for(node* iter_node : current_nodes_buffer){
+            for(node* iter_node2 : iter_node->get_output_nodes()){
+                if(!current_nodes.contains(iter_node2))
+                    current_nodes.append(iter_node2);
+            }
+        }
+        for(node* iter_node : current_nodes_buffer){
+            for(QChar symbol : alphabet){
+                isEnd = false;
+                QList<node*> summary_states;
+                for(node* iter_node2 : iter_node->get_output_nodes(symbol)){
+                    if(!summary_states.contains(iter_node2)){
+                        if(iter_node2->get_is_Ended())
+                            isEnd = true;
+                        summary_states.append(iter_node2);
+                    }
+                }
+                if(!summary_states.isEmpty())
+                    dfa->insert_node(summary_states,false,isEnd,symbol,iter_node);
+            }
+        }
+        add_unique_nodes(checked_nodes,current_nodes_buffer);
+    }
+
+}
+
+void RegExp::add_unique_nodes(QList<node*>& list, QList<node *> &elements){
+    for(node* element: elements)
+        if(!list.contains(element))
+            list.append(element);
 }
 
 void RegExp::create_nfa(QString &string, QMap<QString, QList<node*> > list_brackets_nodes, bool isEnded)
@@ -67,13 +120,16 @@ void RegExp::create_nfa(QString &string, QMap<QString, QList<node*> > list_brack
 }
 
 void RegExp::add_sign(QString& string){
-    if(string[0] != '/')
+    int pos;
+    if(string[0] != '/'){
         string.insert(1,'&');
+        pos = 1;
+    }
     else{
         int number_pos = string.indexOf('/',2) + 1;
         string.insert(number_pos,'&');
+        pos = string.indexOf('/',2)+1;
     }
-    int pos = 2;
     while(pos < string.length()){
         QChar symbol = string[pos];
         if(symbol == '/'){
@@ -195,12 +251,34 @@ QList<node *> RegExp::getListNFANodes()
 
 QList<node *> RegExp::getListDFANodes()
 {
-    return QList<node *>();
+    return dfa->getNodes();
 }
 
 bool RegExp::getIsValid() const
 {
     return isValid;
+}
+
+bool RegExp::Check(const QString &string)
+{
+    node* current_node = dfa->get_input_node();
+    int number = 0;
+    for(QChar symbol : string){
+        if(number == string.length())
+            break;
+        bool valid_symbol = false;
+        if(current_node->get_output_nodes_keys().contains(symbol))
+            valid_symbol = true;
+
+
+        if(!valid_symbol)
+            return false;
+        number++;
+        current_node = current_node->get_output_nodes(symbol).at(0);
+    }
+    if(current_node->get_is_Ended())
+        return true;
+    return false;
 }
 
 QList<QChar> RegExp::getAlphabet() const

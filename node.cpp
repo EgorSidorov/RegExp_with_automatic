@@ -162,3 +162,15 @@ QMultiMap<QChar, node *>* node::getOutgoing_map()
 {
     return &outgoing_map;
 }
+
+void node::revert()
+{
+    QMultiMap<QChar,node*> buffer = input_map;
+    input_map = outgoing_map;
+    outgoing_map = buffer;
+    if(isStarting && isEnded)
+        return;
+    bool buffer_bool = isStarting;
+    isStarting = isEnded;
+    isEnded = buffer_bool;
+}

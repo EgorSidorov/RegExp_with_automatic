@@ -20,12 +20,22 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_checkButton_clicked()
 {
+    if(regExp && regExp->getIsValid()){
+        if(regExp->Check(ui->ownStringEdit->text())){
+            ui->result_label->setText("Корректное");
+        }
+        else {
+            ui->result_label->setText("Некорректное");
+        }
+    }
 }
 
 
 void MainWindow::on_comboBox_activated(int index)
 {
     comboBoxIndex = index;
+    if(regExp)
+        print(ui->tableWidget);
 }
 
 void MainWindow::on_genButton_clicked()
@@ -75,6 +85,8 @@ void MainWindow::print(QTableWidget *widget)
     QList<node*> nodes;
     if(comboBoxIndex == 0)
         nodes.append(regExp->getListNFANodes());
+    else if(comboBoxIndex == 1)
+        nodes.append(regExp->getListDFANodes());
     int countRow = nodes.length();
     int countColumn = regExp->getAlphabet().length();
     widget->setColumnCount(countColumn);
