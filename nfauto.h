@@ -30,7 +30,8 @@ public:
     void replaceInput();
 
     QList<node *> getInput_nodes() const;
-
+    void delete_nodes();
+    void operator=(NFAuto* object);
 protected:
     QList<QChar> alphabet;
     QList<node*> nodes;
@@ -45,7 +46,7 @@ protected:
     node* stack_begin;
     QList<node*> stack_end;
     bool isEnded;
-
+    node* make_node();
     void init();
     QList<QChar> get_connection_symbols(node *input_node, node *output_node);
 };

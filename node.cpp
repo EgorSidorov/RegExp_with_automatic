@@ -90,24 +90,12 @@ void node::remove_output_node(QChar symbol, node *node, bool recursive){
 
 QList<node *> node::get_input_nodes(QChar symbol)
 {
-    QList<node*> return_list;
-    QMultiMap<QChar,node*>::iterator i = input_map.find(symbol);
-    while (i != input_map.end() && i.key() == symbol) {
-        return_list.append(i.value());
-        ++i;
-    }
-    return return_list;
+    return input_map.values(symbol);
 }
 
 QList<node *> node::get_input_nodes()
 {
-    QList<node*> return_list;
-    QMultiMap<QChar,node*>::iterator i = input_map.begin();
-    while (i != input_map.end()) {
-        return_list.append(i.value());
-        ++i;
-    }
-    return return_list;
+    return input_map.values();
 }
 
 QList<QChar> node::get_input_nodes_keys()
@@ -122,24 +110,12 @@ QList<QChar> node::get_output_nodes_keys()
 
 QList<node *> node::get_output_nodes(QChar symbol)
 {
-    QList<node*> return_list;
-    QMultiMap<QChar,node*>::iterator i = outgoing_map.find(symbol);
-    while (i != outgoing_map.end() && i.key() == symbol) {
-        return_list.append(i.value());
-        ++i;
-    }
-    return return_list;
+    return  outgoing_map.values(symbol);
 }
 
 QList<node *> node::get_output_nodes()
 {
-    QList<node*> return_list;
-    QMultiMap<QChar,node*>::iterator i = outgoing_map.begin();
-    while (i != outgoing_map.end()) {
-        return_list.append(i.value());
-        ++i;
-    }
-    return return_list;
+    return  outgoing_map.values();
 }
 
 void node::set_is_starting(bool value){

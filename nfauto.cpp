@@ -15,14 +15,12 @@ NFAuto::NFAuto(QList<QChar> alphabet, bool isEnded)
 NFAuto::~NFAuto()
 {
     if(isEnded)
-        for(node* _iter: nodes)
-            delete _iter;
+        delete_nodes();
 }
 
 void NFAuto::init()
 {
-    input_node = new node;
-    nodes.append(input_node);
+    input_node = make_node();
     input_node->set_is_starting(true);
     current_nodes.append(input_node);
 }
@@ -34,8 +32,7 @@ void NFAuto::concagenation()
     QString symbols = input_symbols.pop();
     if(symbols.length() == 1){
         QChar symbol = symbols[0];
-        node* new_node = new node;
-        nodes.append(new_node);
+        node* new_node = make_node();
         for(node* _node : current_nodes){
             _node->add_output_node(new_node,symbol);
         }
@@ -77,6 +74,7 @@ void NFAuto::concagenation()
 void NFAuto::setEnd(){
     for(node* _node : current_nodes){
         _node->set_is_Ended(true);
+        output_node.append(_node);
     }
 }
 
@@ -97,8 +95,7 @@ void NFAuto::plus()
     QString symbols = input_symbols.pop();
     if(symbols.length() == 1){
         QChar symbol = symbols[0];
-        node* new_node = new node;
-        nodes.append(new_node);
+        node* new_node = make_node();
         for(node* _node : current_nodes){
             _node->add_output_node(new_node,symbol);
         }
@@ -115,8 +112,7 @@ void NFAuto::kleene()
     QString symbols = input_symbols.pop();
     if(symbols.length() == 1){
         QChar symbol = symbols[0];
-        node* new_node = new node;
-        nodes.append(new_node);
+        node* new_node = make_node();
         for(node* _node : current_nodes){
             _node->add_output_node(new_node,symbol);
         }
@@ -181,7 +177,21 @@ void NFAuto::revert()
         _node->revert();
     QList<node*> buffer = output_node;
     output_node = input_nodes;
-    input_nodes = output_node;
+    input_nodes = buffer;
+}
+
+node* NFAuto::make_node()
+{
+    node* new_node = new node;
+    nodes.append(new_node);
+    return new_node;
+}
+
+void NFAuto::delete_nodes()
+{
+    for(node* iter_node: nodes)
+        delete iter_node;
+    nodes.clear();
 }
 
 QList<QChar> NFAuto::get_connection_symbols(node* input_node, node* output_node){
@@ -191,6 +201,47 @@ QList<QChar> NFAuto::get_connection_symbols(node* input_node, node* output_node)
             return_list.append(symbol);
     }
     return return_list;
+}
+
+void NFAuto::operator=(NFAuto* object)
+{
+    for(node* iter_node : nodes){
+        node* new_node = object->make_node();
+        new_node->set_is_starting(iter_node->get_is_starting());
+        new_node->set_is_Ended(iter_node->get_is_Ended());
+    }
+    for(node* iter_node : nodes){
+        int add_from_node_number = nodes.indexOf(iter_node);
+        node* add_from_node = object->getNodes().at(add_from_node_number);
+        int number = 0;
+        for(node* iter_node2 : iter_node->get_output_nodes()){
+            int add_to_node_number = nodes.indexOf(iter_node2);
+            QChar symbol = iter_node->get_output_nodes_keys().at(number);
+            node* add_to_node = object->getNodes().at(add_to_node_number);
+            add_from_node->add_output_node(add_to_node,symbol);
+            number++;
+        }
+        number = 0;
+        for(node* iter_node2 : iter_node->get_input_nodes()){
+            int add_to_node_number = nodes.indexOf(iter_node2);
+            QChar symbol = iter_node->get_input_nodes_keys().at(number);
+            node* add_to_node = object->getNodes().at(add_to_node_number);
+            add_from_node->add_input_node(add_to_node,symbol);
+            number++;
+        }
+    }
+    object->isEnded = isEnded;
+    object->alphabet = alphabet;
+    for(node* iter_node : input_nodes){
+        object->input_nodes.append(object->getNodes().at(nodes.indexOf(iter_node)));
+    }
+    object->input_node = object->getNodes().at(nodes.indexOf(input_node));
+    for(node* iter_node : output_node){
+        object->output_node.append(object->getNodes().at(nodes.indexOf(iter_node)));
+    }
+    object->start_is_ended = start_is_ended;
+    object->last_start_is_ended = last_start_is_ended;
+
 }
 
 void NFAuto::setStack_automat(const QList<node *> value)

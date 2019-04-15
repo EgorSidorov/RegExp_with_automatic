@@ -18,7 +18,13 @@ RegExp::RegExp(const QString &str)
         }
         create_nfa(expression,list_brackets_symbols.get_bracket_node_map(), true);
         nfa->replaceInput();
-        create_dfa();
+        //nfa->revert();
+        create_dfa(nfa->getInput_nodes());
+        //dfa->revert();
+        //DFAuto* dfa2 = new DFAuto();
+        //dfa->operator=(dfa2);
+        //create_dfa(dfa2->getInput_nodes());
+        //nfa->revert();
     }
 }
 
@@ -31,17 +37,17 @@ void RegExp::make_alphabet()
     }
 }
 
-void RegExp::create_dfa(){
-    dfa = std::make_unique<DFAuto>(alphabet);
-    bool isEnd = false;
+void RegExp::create_dfa(QList<node*> input_nodes){
+    /*bool isEnd = false;
     for(node* iter : nfa->getInput_nodes())
     {
         if(iter->get_is_Ended()){
             isEnd = true;
             break;
         }
-    }
-    dfa->insert_node(nfa->getInput_nodes(),true,isEnd,' ',NULL);
+    }*/
+    dfa = std::make_unique<DFAuto>(alphabet,input_nodes);
+    /*dfa->insert_node(nfa->getInput_nodes(),true,isEnd,' ',NULL);
     QList<node*> checked_nodes;
     checked_nodes.append(nfa->getInput_nodes());
     QList<node*> current_nodes;
@@ -72,7 +78,7 @@ void RegExp::create_dfa(){
             }
         }
         add_unique_nodes(checked_nodes,current_nodes_buffer);
-    }
+    }*/
 
 }
 

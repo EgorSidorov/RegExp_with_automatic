@@ -31,7 +31,8 @@ SOURCES += \
     regexp.cpp \
     dfa.cpp \
     nfauto.cpp \
-    node.cpp
+    node.cpp \
+    tests.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,7 +40,8 @@ HEADERS += \
     regexp.h \
     dfa.h \
     nfauto.h \
-    node.h
+    node.h \
+    tests.h
 
 FORMS += \
         mainwindow.ui

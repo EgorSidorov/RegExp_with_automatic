@@ -40,7 +40,7 @@ private:
     void add_sign(QString &string);
     void change_plus_by_kleene_and_contagenation();
     void create_nfa(QString &string, QMap<QString, QList<node *> > list_brackets_nodes, bool isEnded);
-    void create_dfa();
+    void create_dfa(QList<node *> input_nodes);
     void add_unique_nodes(QList<node *> &list, QList<node *>& elements);
 };
 
