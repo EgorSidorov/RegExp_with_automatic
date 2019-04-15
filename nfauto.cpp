@@ -271,7 +271,15 @@ QList<node *> NFAuto::getNodes()
 
 void NFAuto::replaceInput()
 {
-    input_nodes.append(input_node);
+    input_nodes.clear();
+    output_node.clear();
+    for(node* _node : nodes){
+        if(_node->get_is_Ended())
+            output_node.append(_node);
+        if(_node->get_is_starting())
+            input_nodes.append(_node);
+    }
+    //input_nodes.append(input_node);
 }
 
 QList<node *> NFAuto::getInput_nodes() const

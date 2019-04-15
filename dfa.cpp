@@ -23,7 +23,7 @@ void DFAuto::make_dfa(){
     nodes_states.insert(nodes_states.length(),input_nodes);
     current_nodes.insert(current_nodes.length(),input_nodes);
     while(!current_nodes.isEmpty()){
-        qDebug()<<"last_add_index:"<<last_add_index;
+        //qDebug()<<"last_add_index:"<<last_add_index;
         int plus_for_last_add_index = 0;
         //сохраняем текущее состояние списка элементов, по которым надо пройти
         QList<QList<node*>> current_nodes_buffer = current_nodes;
@@ -32,39 +32,39 @@ void DFAuto::make_dfa(){
         int number = current_nodes_buffer.length();
         for(QList<node*> iter_list : current_nodes_buffer){
             number--;
-        for(QChar iter_symbol : alphabet){
-            QList<node*> summary_states;
-            //по всем выбранным элементам найти те, которые образуют новые ноды
+            for(QChar iter_symbol : alphabet){
+                QList<node*> summary_states;
+                //по всем выбранным элементам найти те, которые образуют новые ноды
 
                 for(node* iter_node : iter_list){
                     QList<node*> output_nodes = iter_node->get_output_nodes(iter_symbol);
                     add_unique_nodes(summary_states,output_nodes);
                 }
 
-            qDebug()<<summary_states.length();
+                //qDebug()<<summary_states.length();
 
-            //если можно создать ноду
-            if(!summary_states.isEmpty())
-            {
-                //если еще нет таких нод
-                if(!nodes_states.contains(summary_states)){
-                    plus_for_last_add_index++;
-                    node* new_node = make_node();
-                    current_nodes.insert(current_nodes.length(),summary_states);
-                    new_node->set_is_Ended(isEndedList(summary_states));
-                    //new_node->set_is_starting(isStartingList(summary_states));
-                    nodes_states.insert(nodes_states.length(),summary_states);
-                    new_node->add_input_node(nodes[last_add_index],iter_symbol);
-                }
-                //если есть, установить связь с текущей
-                else {
-                    int index = nodes_states.indexOf(summary_states);
-                    nodes[index]->add_input_node(nodes[last_add_index-number],iter_symbol);
-                    if(!nodes[index]->get_is_Ended())
-                        nodes[index]->set_is_Ended(isEndedList(summary_states));
+                //если можно создать ноду
+                if(!summary_states.isEmpty())
+                {
+                    //если еще нет таких нод
+                    if(!nodes_states.contains(summary_states)){
+                        plus_for_last_add_index++;
+                        node* new_node = make_node();
+                        current_nodes.insert(current_nodes.length(),summary_states);
+                        new_node->set_is_Ended(isEndedList(summary_states));
+                        //new_node->set_is_starting(isStartingList(summary_states));
+                        nodes_states.insert(nodes_states.length(),summary_states);
+                        new_node->add_input_node(nodes[last_add_index-number],iter_symbol);
+                    }
+                    //если есть, установить связь с текущей
+                    else {
+                        int index = nodes_states.indexOf(summary_states);
+                        nodes[index]->add_input_node(nodes[last_add_index-number],iter_symbol);
+                        if(!nodes[index]->get_is_Ended())
+                            nodes[index]->set_is_Ended(isEndedList(summary_states));
+                    }
                 }
             }
-        }
         }
         last_add_index+= plus_for_last_add_index;
     }

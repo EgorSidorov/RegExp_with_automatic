@@ -18,13 +18,14 @@ RegExp::RegExp(const QString &str)
         }
         create_nfa(expression,list_brackets_symbols.get_bracket_node_map(), true);
         nfa->replaceInput();
-        //nfa->revert();
+        nfa->revert();
         create_dfa(nfa->getInput_nodes());
-        //dfa->revert();
-        //DFAuto* dfa2 = new DFAuto();
-        //dfa->operator=(dfa2);
-        //create_dfa(dfa2->getInput_nodes());
-        //nfa->revert();
+        dfa->revert();
+        dfa->replaceInput();
+        DFAuto* dfa2 = new DFAuto();
+        dfa->operator=(dfa2);
+        create_dfa(dfa2->getInput_nodes());
+        nfa->revert();
     }
 }
 
