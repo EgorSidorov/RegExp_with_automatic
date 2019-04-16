@@ -34,16 +34,19 @@ tests::tests()
     make("a*b*bcd(k*|l(m*))|d+","dddddddd",true);
     make("a*b*bcd(k*|l(m*))|d","aaaabbbbcdlmmmm",true);
 
-
-
     make("a|d+","dd",true);
     make("a|d+","a",true);
     make("a|d+","ad",false);
+
+    make("ab*|cd+","abbbbbbbbb",true);
+    make("ab*|cd+","abbbbbbbbbcd",false);
+
+    make("(ab)*|cd+","ababababab",true);
+    make("(ab)*|cd+","abababababcd",false);
 }
 
 void tests::make(QString expression,QString match, bool result){
     RegExp exp(expression);
-    //qDebug()<<expression<<" "<<match;
     if(exp.Check(match) != result){
         qDebug()<<expression<<" "<<match;
         print(0,exp);

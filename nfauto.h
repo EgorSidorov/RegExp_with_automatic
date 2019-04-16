@@ -27,11 +27,10 @@ public:
 
     QList<node *> getNodes();
 
-    void replaceInput();
+    void set_Input_Output();
 
     QList<node *> getInput_nodes() const;
     void delete_nodes();
-    void operator=(NFAuto* object);
 protected:
     QList<QChar> alphabet;
     QList<node*> nodes;

@@ -17,13 +17,13 @@ RegExp::RegExp(const QString &str)
             list_brackets_symbols.insert_bracket_node_map(it_str.first,nfa->getNodes());
         }
         create_nfa(expression,list_brackets_symbols.get_bracket_node_map(), true);
-        nfa->replaceInput();
+        nfa->set_Input_Output();
         nfa->revert();
         create_dfa(nfa->getInput_nodes());
         dfa->revert();
-        dfa->replaceInput();
+        dfa->set_Input_Output();
         DFAuto* dfa2 = new DFAuto();
-        dfa->operator=(dfa2);
+        dfa->copy(dfa2);
         create_dfa(dfa2->getInput_nodes());
         nfa->revert();
     }
@@ -39,48 +39,7 @@ void RegExp::make_alphabet()
 }
 
 void RegExp::create_dfa(QList<node*> input_nodes){
-    /*bool isEnd = false;
-    for(node* iter : nfa->getInput_nodes())
-    {
-        if(iter->get_is_Ended()){
-            isEnd = true;
-            break;
-        }
-    }*/
     dfa = std::make_unique<DFAuto>(alphabet,input_nodes);
-    /*dfa->insert_node(nfa->getInput_nodes(),true,isEnd,' ',NULL);
-    QList<node*> checked_nodes;
-    checked_nodes.append(nfa->getInput_nodes());
-    QList<node*> current_nodes;
-    current_nodes.append(nfa->getInput_nodes());
-    while(checked_nodes.length() != nfa->getNodes().length()){
-        //dfa->new_state();
-        QList<node*> current_nodes_buffer = current_nodes;
-        current_nodes.clear();
-        for(node* iter_node : current_nodes_buffer){
-            for(node* iter_node2 : iter_node->get_output_nodes()){
-                if(!current_nodes.contains(iter_node2))
-                    current_nodes.append(iter_node2);
-            }
-        }
-        for(node* iter_node : current_nodes_buffer){
-            for(QChar symbol : alphabet){
-                isEnd = false;
-                QList<node*> summary_states;
-                for(node* iter_node2 : iter_node->get_output_nodes(symbol)){
-                    if(!summary_states.contains(iter_node2)){
-                        if(iter_node2->get_is_Ended())
-                            isEnd = true;
-                        summary_states.append(iter_node2);
-                    }
-                }
-                if(!summary_states.isEmpty())
-                    dfa->insert_node(summary_states,false,isEnd,symbol,iter_node);
-            }
-        }
-        add_unique_nodes(checked_nodes,current_nodes_buffer);
-    }*/
-
 }
 
 void RegExp::add_unique_nodes(QList<node*>& list, QList<node *> &elements){
