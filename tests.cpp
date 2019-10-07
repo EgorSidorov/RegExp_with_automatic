@@ -43,6 +43,9 @@ tests::tests()
 
     make("(ab)*|cd+","ababababab",true);
     make("(ab)*|cd+","abababababcd",false);
+
+    make("(a|b)*abb","ab",false);
+    make("(a|b)+abb","abb",false);
 }
 
 void tests::make(QString expression,QString match, bool result){

@@ -49,7 +49,6 @@ void DFAuto::make_dfa(){
                         node* new_node = make_node();
                         current_nodes.insert(current_nodes.length(),summary_states);
                         new_node->set_is_Ended(isEndedList(summary_states));
-                        //new_node->set_is_starting(isStartingList(summary_states));
                         nodes_states.insert(nodes_states.length(),summary_states);
                         new_node->add_input_node(nodes[last_add_index-number],iter_symbol);
                     }

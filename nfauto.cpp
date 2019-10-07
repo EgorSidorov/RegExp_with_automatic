@@ -39,29 +39,37 @@ void NFAuto::concagenation()
         current_nodes.clear();
         current_nodes.append(new_node);
     } else {
-        stack_begin->set_is_starting(false);
+        //stack_begin->set_is_starting(false);
         for(node* _node : current_nodes){
             for(node* _node2 : stack_begin->get_output_nodes()){
                     for(QChar symbol2 : get_connection_symbols(stack_begin,_node2))
                         _node->add_output_node(_node2,symbol2);
-                    stack_begin->remove_output_node(_node2);
+                    //stack_begin->remove_output_node(_node2);
+            }
+            for(node* _node2 : stack_begin->get_output_nodes()){
+                stack_begin->remove_output_node(_node2);
             }
             for(node* _node2 : stack_begin->get_input_nodes()){
                     for(QChar symbol2 : get_connection_symbols(_node2,stack_begin))
                         _node->add_input_node(_node2,symbol2);
-                    stack_begin->remove_input_node(_node2);
+                    //stack_begin->remove_input_node(_node2);
+            }
+            for(node* _node2 : stack_begin->get_input_nodes()){
+                stack_begin->remove_input_node(_node2);
             }
         }
-        if(!stack_end.contains(stack_begin))
+        //if(!stack_end.contains(stack_begin))
             current_nodes.clear();
-        stack_automat.removeAll(stack_begin);
+        //if(!stack_end.contains(stack_begin))
+            stack_automat.removeAll(stack_begin);
         nodes.append(stack_automat);
         current_nodes.append(stack_end);
         for(node* _node : stack_end){
             _node->set_is_Ended(false);
         }
         stack_automat.clear();
-        delete stack_begin;
+        //if(!stack_end.contains(stack_begin))
+            delete stack_begin;
         stack_begin = NULL;
         stack_end.clear();
     }
@@ -120,6 +128,10 @@ void NFAuto::kleene()
             stack_automat.removeAll(stack_begin);
         nodes.append(stack_automat);
 
+        for(node* iter_node : stack_end){
+           iter_node->set_is_Ended(false);
+        }
+
         //убрать все конечные элементы и все пути с них перенаправить на начало
         for(node* _node2 : stack_begin->get_output_nodes()){
             for(QChar symbol : get_connection_symbols(stack_begin,_node2)){
@@ -131,12 +143,18 @@ void NFAuto::kleene()
                     _node4->add_output_node(_node2,symbol);
                 }
             }
+            //stack_begin->remove_output_node(_node2);
+        }
+
+        for(node* _node2 : stack_begin->get_output_nodes()){
             stack_begin->remove_output_node(_node2);
         }
+
         current_nodes.append(stack_end);
 
         stack_automat.clear();
-        delete stack_begin;
+        if(!stack_end.contains(stack_begin))
+            delete stack_begin;
         stack_begin = NULL;
         stack_end.clear();
     }

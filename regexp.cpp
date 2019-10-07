@@ -25,6 +25,7 @@ RegExp::RegExp(const QString &str)
         DFAuto* dfa2 = new DFAuto();
         dfa->copy(dfa2);
         create_dfa(dfa2->getInput_nodes());
+        delete dfa2;
         nfa->revert();
     }
 }
@@ -139,7 +140,7 @@ void RegExp::change_plus_by_kleene_and_contagenation(){
         }
         QString current_string = expression.mid(begin_index,plus_index-begin_index+1);
         expression.remove(plus_index+1,1);
-        expression.insert(plus_index+1,"*"+current_string);
+        expression.insert(plus_index+1,current_string+"*");
         plus_index+= current_string.length()+1;
         current_index = plus_index;
         plus_index = expression.indexOf(")+",current_index);
